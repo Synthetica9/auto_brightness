@@ -51,7 +51,7 @@ def between(lower, x, upper):
 
 @contextmanager
 def running_once(program_name: str, per_user: bool=False):
-    from fcntl import lockf, LOCK_EX, LOCK_NB
+    from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN
     from os import getpid, getuid
 
     if per_user:
@@ -63,6 +63,8 @@ def running_once(program_name: str, per_user: bool=False):
         f.flush()
 
         yield
+
+        lockf(f, LOCK_UN)
 
 
 def main():
