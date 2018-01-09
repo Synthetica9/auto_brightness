@@ -10,3 +10,6 @@ Set your location at the top of `auto_brightness.py` (`LOCATION = ephem.city('Am
 
 - Python 3.6
 - ephem
+- xbacklight
+
+Tested on NixOS, might work on other platforms as well
