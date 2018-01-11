@@ -36,8 +36,8 @@ def get_current_brightness(here=None):
 
     sun = ephem.Sun(here)
 
-    print(f'{sun.alt}°')
-    Θ = float(sun.alt)
+    Θ = sun.alt
+    print(f'{Θ}°')
 
     x = exp(2 * sin(Θ) - 2)
     return ceil(100 * x)
