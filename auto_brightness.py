@@ -14,7 +14,7 @@ from datetime import timedelta, datetime
 import ephem
 
 
-LOCATION = ephem.city('Amsterdam')
+CITY = 'Amsterdam'
 CHANGE_HALFTIME = timedelta(minutes=30)
 SLEEP_TIME = timedelta(seconds=5)
 CHANGE_PERCENTAGE = 20/100
@@ -30,7 +30,10 @@ def sleep(seconds, *args, **kwargs):
         _sleep(seconds.total_seconds(), *args, **kwargs)
 
 
-def get_current_brightness(here=LOCATION):
+def get_current_brightness(here=None):
+    if here is None:
+        here = ephem.city(CITY)
+
     sun = ephem.Sun(here)
 
     print(f'{sun.alt}°')
@@ -80,7 +83,6 @@ def main():
             nonlocal offset
             offset = between(1, (b + offset) * multiplier, 100) - b
             set_brightness(b + offset)
-            # print(offset)
 
         for signum in [SIGUSR1, SIGUSR2]:
             signal(signum, handler)
