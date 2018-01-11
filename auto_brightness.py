@@ -1,5 +1,5 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i python -p "with python36Packages; [ephem python]"
+#! nix-shell -i python -p "with python3Packages; [ephem python]" xbacklight
 
 import subprocess
 from signal import signal, SIGUSR1, SIGUSR2
@@ -81,7 +81,7 @@ def main():
                 SIGUSR2: 1 - CHANGE_PERCENTAGE
             }[signum]
             nonlocal offset
-            offset = between(1, (b + offset) * multiplier, 100) - b
+            offset = between(1, (offset + b) * multiplier, 100) - b
             set_brightness(b + offset)
 
         for signum in [SIGUSR1, SIGUSR2]:
@@ -91,12 +91,13 @@ def main():
         loop_time = timedelta()
         while True:
             b = get_current_brightness()
-            set_brightness(b + offset)
 
             mult = exp(-ln(2) * loop_time / CHANGE_HALFTIME)
             offset *= mult
-            offset = between(1, (b + offset), 100) - b
+            offset = between(1, (offset + b), 100) - b
             print(f"offset: {offset}")
+
+            set_brightness(b + offset)
 
             sleep(SLEEP_TIME)
             loop_time, t = datetime.now() - t, datetime.now()
