@@ -1,14 +1,13 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i python -p "with python3Packages; [ephem python]" xbacklight
+#! nix-shell -i python -p "with python3Packages; [ephem python]" xorg.xbacklight
+
+from tools import *
 
 import subprocess
 from signal import signal, SIGUSR1, SIGUSR2
 
-from contextlib import contextmanager
-
 from math import exp, log as ln, sin, ceil
 
-from time import sleep
 from datetime import timedelta, datetime
 
 import ephem
@@ -20,21 +19,14 @@ SLEEP_TIME = timedelta(seconds=5)
 CHANGE_PERCENTAGE = 20/100
 
 
-_sleep = sleep
+def get_current_brightness(here=None, sun=None):
+    assert sun is None or here is None
 
-
-def sleep(seconds, *args, **kwargs):
-    try:
-        _sleep(seconds, *args, **kwargs)
-    except TypeError:
-        _sleep(seconds.total_seconds(), *args, **kwargs)
-
-
-def get_current_brightness(here=None):
     if here is None:
         here = ephem.city(CITY)
 
-    sun = ephem.Sun(here)
+    if sun is None:
+        sun = ephem.Sun(here)
 
     Θ = sun.alt
     print(f'{Θ}°')
@@ -46,28 +38,6 @@ def get_current_brightness(here=None):
 def set_brightness(x):
     print(f'setting brightness to {x}')
     subprocess.check_call(["xbacklight", "-set", str(x)])
-
-
-def between(lower, x, upper):
-    return min(max(lower, x), upper)
-
-
-@contextmanager
-def running_once(program_name: str, per_user: bool=False):
-    from fcntl import lockf, LOCK_EX, LOCK_NB, LOCK_UN
-    from os import getpid, getuid
-
-    if per_user:
-        program_name += f'_{getuid()}'
-
-    with open(f'/tmp/{program_name}.pid', 'w') as f:
-        lockf(f, LOCK_EX | LOCK_NB)  # EXclusive, Non-Blocking
-        f.write(str(getpid()))
-        f.flush()
-
-        yield
-
-        lockf(f, LOCK_UN)
 
 
 def main():
