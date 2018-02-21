@@ -21,6 +21,8 @@ CHANGE_PERCENTAGE = 20/100
 BRIGHTNESS_UP = SIGUSR1
 BRIGHTNESS_DOWN = SIGUSR2
 
+MAX_BRIGHTNESS = 120
+
 
 def get_current_brightness(here=None, sun=None):
     assert sun is None or here is None
@@ -54,7 +56,7 @@ def main():
                 BRIGHTNESS_DOWN: 1 - CHANGE_PERCENTAGE
             }[signum]
             nonlocal offset
-            offset = between(1, (offset + b) * multiplier, 100) - b
+            offset = between(1, (offset + b) * multiplier, MAX_BRIGHTNESS) - b
             set_brightness(b + offset)
 
         for signum in [BRIGHTNESS_UP, BRIGHTNESS_DOWN]:
@@ -69,7 +71,7 @@ def main():
 
             mult = exp(-ln(2) * loop_time / CHANGE_HALFTIME)
             offset *= mult
-            offset = between(1, (offset + b), 100) - b
+            offset = between(1, (offset + b), MAX_BRIGHTNESS) - b
             print(f"offset: {offset}")
 
             set_brightness(b + offset)
