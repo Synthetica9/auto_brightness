@@ -4,7 +4,7 @@
 from tools import *
 
 import subprocess
-from signal import signal, SIGUSR1, SIGUSR2
+from signal import signal, SIGUSR1, SIGUSR2, SIGALRM, SIG_IGN
 
 from math import exp, log as ln, sin, ceil
 
@@ -17,6 +17,9 @@ CITY = 'Amsterdam'
 CHANGE_HALFTIME = timedelta(minutes=30)
 SLEEP_TIME = timedelta(seconds=5)
 CHANGE_PERCENTAGE = 20/100
+
+BRIGHTNESS_UP = SIGUSR1
+BRIGHTNESS_DOWN = SIGUSR2
 
 
 def get_current_brightness(here=None, sun=None):
@@ -47,15 +50,17 @@ def main():
         def handler(signum, frame):
             b = get_current_brightness()
             multiplier = {
-                SIGUSR1: 1 + CHANGE_PERCENTAGE,
-                SIGUSR2: 1 - CHANGE_PERCENTAGE
+                BRIGHTNESS_UP: 1 + CHANGE_PERCENTAGE,
+                BRIGHTNESS_DOWN: 1 - CHANGE_PERCENTAGE
             }[signum]
             nonlocal offset
             offset = between(1, (offset + b) * multiplier, 100) - b
             set_brightness(b + offset)
 
-        for signum in [SIGUSR1, SIGUSR2]:
+        for signum in [BRIGHTNESS_UP, BRIGHTNESS_DOWN]:
             signal(signum, handler)
+
+        signal(SIGALRM, SIG_IGN)
 
         t = datetime.now()
         loop_time = timedelta()
@@ -69,7 +74,9 @@ def main():
 
             set_brightness(b + offset)
 
-            sleep(SLEEP_TIME)
+            with signal_interruptable():
+                sleep(SLEEP_TIME)
+
             loop_time, t = datetime.now() - t, datetime.now()
             print(f"loop time: {loop_time}")
 
