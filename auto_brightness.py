@@ -21,7 +21,8 @@ CHANGE_PERCENTAGE = 20/100
 BRIGHTNESS_UP = SIGUSR1
 BRIGHTNESS_DOWN = SIGUSR2
 
-MAX_BRIGHTNESS = 120
+MAX_OVERDRIVE_PRESSES = 2
+MAX_BRIGHTNESS = 100 * (1 + CHANGE_PERCENTAGE) ** MAX_OVERDRIVE_PRESSES
 
 
 def get_current_brightness(here=None, sun=None):
@@ -55,8 +56,17 @@ def main():
                 BRIGHTNESS_UP: 1 + CHANGE_PERCENTAGE,
                 BRIGHTNESS_DOWN: 1 - CHANGE_PERCENTAGE
             }[signum]
+
             nonlocal offset
-            offset = between(1, (offset + b) * multiplier, MAX_BRIGHTNESS) - b
+
+            old_offset = offset
+            offset = ((b + offset) * multiplier) - b
+
+            if abs(offset - old_offset) < 1:
+                offset = old_offset + (1 if signum == BRIGHTNESS_UP else -1)
+                print("Correcting for sub-1 change")
+
+            offset = between(1, b + offset, MAX_BRIGHTNESS) - b
             set_brightness(b + offset)
 
         for signum in [BRIGHTNESS_UP, BRIGHTNESS_DOWN]:
