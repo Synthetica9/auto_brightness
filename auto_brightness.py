@@ -54,7 +54,7 @@ def main():
             b = get_current_brightness()
             multiplier = {
                 BRIGHTNESS_UP: 1 + CHANGE_PERCENTAGE,
-                BRIGHTNESS_DOWN: 1 - CHANGE_PERCENTAGE
+                BRIGHTNESS_DOWN: 1 / (1 + CHANGE_PERCENTAGE)
             }[signum]
 
             nonlocal offset
