@@ -46,6 +46,12 @@ def set_brightness(x):
     subprocess.check_call(["xbacklight", "-set", str(x)])
 
 
+def normalize_offset(offset, b=None):
+    if b is None:
+        b = get_current_brightness()
+    return between(1.0, b + offset, MAX_BRIGHTNESS) - b
+
+
 def main():
     with running_once('auto_brightness'):
         offset = 0
@@ -66,7 +72,7 @@ def main():
                 offset = old_offset + (1 if signum == BRIGHTNESS_UP else -1)
                 print("Correcting for sub-1 change")
 
-            offset = between(1, b + offset, MAX_BRIGHTNESS) - b
+            offset = normalize_offset(offset, b)
             set_brightness(b + offset)
 
         for signum in [BRIGHTNESS_UP, BRIGHTNESS_DOWN]:
@@ -81,7 +87,7 @@ def main():
 
             mult = exp(-ln(2) * loop_time / CHANGE_HALFTIME)
             offset *= mult
-            offset = between(1, (offset + b), MAX_BRIGHTNESS) - b
+            offset = normalize_offset(offset, b)
             print(f"offset: {offset}")
 
             set_brightness(b + offset)
