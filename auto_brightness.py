@@ -12,21 +12,36 @@ from datetime import timedelta, datetime
 
 import ephem
 
-
+# CONFIGURABLES
 CITY = 'Amsterdam'
-CHANGE_HALFTIME = timedelta(minutes=30)
+CHANGE_HALFTIME = timedelta(minutes=60)
 SLEEP_TIME = timedelta(seconds=5)
 CHANGE_PERCENTAGE = 20/100
 
 BRIGHTNESS_UP = SIGUSR1
 BRIGHTNESS_DOWN = SIGUSR2
 
-MAX_OVERDRIVE_PRESSES = 2
+MAX_OVERDRIVE_PRESSES = 1
 MAX_BRIGHTNESS = 100 * (1 + CHANGE_PERCENTAGE) ** MAX_OVERDRIVE_PRESSES
+
+DOCKED_BRIGHTNESS = 100
+# END OF CONFIGURABLES
+
+
+def get_num_displays():
+    result = subprocess.check_output(["xrandr", "--listactivemonitors"])
+    return result.count(b"\n") - 1
+
+
+def is_external_display_connected():
+    return get_num_displays() > 1
 
 
 def get_current_brightness(here=None, sun=None):
-    assert sun is None or here is None
+    if is_external_display_connected():
+        return DOCKED_BRIGHTNESS
+
+    assert [sun, here].count(None) == 1
 
     if here is None:
         here = ephem.city(CITY)
@@ -38,7 +53,7 @@ def get_current_brightness(here=None, sun=None):
     print(f'{Θ}°')
 
     x = exp(2 * sin(Θ) - 2)
-    return ceil(100 * x)
+    return max(1.0, 100 * x)
 
 
 def set_brightness(x):
