@@ -41,7 +41,7 @@ def get_current_brightness(here=None, sun=None):
     if is_external_display_connected():
         return DOCKED_BRIGHTNESS
 
-    assert [sun, here].count(None) == 1
+    assert [sun, here].count(None) >= 1
 
     if here is None:
         here = ephem.city(CITY)
