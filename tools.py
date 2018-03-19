@@ -4,7 +4,7 @@
 from contextlib import contextmanager
 from time import sleep
 from signal import SIGALRM, signal, getsignal
-
+from math import sin
 
 _sleep = sleep
 
@@ -64,3 +64,10 @@ def signal_interruptable(sig=SIGALRM):
 
 def between(lower, x, upper):
     return min(max(lower, x), upper)
+
+
+def pos_sin(θ):
+    return (sin(θ) + 1) / 2
+
+def linearScale(x, lower, upper):
+    return x * (upper - lower) + lower
